@@ -1,4 +1,4 @@
-import { rename as rnm } from 'fs/promises';
+import { rename as rnm, access } from 'fs';
 
 const pathes = {
   oldPath: 'src/fs/files/wrongFilename.txt',
@@ -6,11 +6,15 @@ const pathes = {
 };
 
 const rename = async ({ oldPath, newPath }) => {
-  try {
-    rnm(oldPath, newPath);
-  } catch {
-    throw new Error('FS operation failed');
-  }
+  access(newPath, (error) => {
+    if (error) {
+      rnm(oldPath, newPath, (error) => {
+        if (error) throw new Error('FS operation failed');
+      });
+    } else {
+      throw new Error('FS operation failed');
+    }
+  });
 };
 
 await rename(pathes);
